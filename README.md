@@ -1166,20 +1166,7 @@ NoSuchMethodError: 'void org.springframework.web.method.ControllerAdviceBean.<in
   - Logs relevantes
   - Versión de Java/Maven
 
-### 💡 Contribuciones
-1. Fork del repositorio
-2. Crear branch feature: `git checkout -b feature/nueva-funcionalidad`
-3. Commit changes: `git commit -am 'Add nueva funcionalidad'`
-4. Push branch: `git push origin feature/nueva-funcionalidad`
-5. Crear Pull Request
-
 ### 📧 Contacto
 Para preguntas técnicas o sugerencias sobre este challenge de Nissum, contactar al desarrollador.
 
 ---
-
-## 📜 Licencia
-
-Este proyecto fue desarrollado como parte del challenge técnico de Nissum. 
-
-**Desarrollado con ❤️ para Nissum Technical Challenge**
