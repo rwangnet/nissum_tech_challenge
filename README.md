@@ -27,8 +27,7 @@ El proyecto implementa una **arquitectura en capas** con separación clara de re
 │   └── UserController.java
 ├── 🔧 service/            # Lógica de negocio
 │   ├── UserService.java
-│   ├── ErrorHandlingService.java
-│   └── impl/UserServiceImpl.java
+│   └── ErrorHandlingService.java
 ├── 💾 repository/         # Acceso a datos (JPA repositories)
 │   ├── UserRepository.java
 │   └── PhoneRepository.java
@@ -36,14 +35,15 @@ El proyecto implementa una **arquitectura en capas** con separación clara de re
 │   ├── User.java
 │   └── Phone.java
 ├── 📦 dto/                # Objetos de transferencia de datos
-│   ├── request/UserRegistrationRequest.java
-│   ├── response/UserResponse.java
-│   └── PhoneDto.java
+│   ├── UserRegistrationRequest.java
+│   ├── PhoneRequest.java
+│   ├── UserResponse.java
+│   ├── PhoneResponse.java
+│   └── ErrorResponse.java
 ├── ⚙️ config/             # Configuraciones de Spring
 │   ├── SecurityConfig.java
 │   ├── OpenApiConfig.java
-│   ├── CustomErrorController.java
-│   └── TestSecurityConfig.java
+│   └── CustomErrorController.java
 ├── 🚨 exception/          # Manejo de errores y excepciones
 │   └── UserAlreadyExistsException.java
 ├── 🔒 filter/             # Filtros de seguridad
@@ -130,8 +130,8 @@ El proyecto implementa una **arquitectura en capas** con separación clara de re
 
 1. **📥 Clonar el repositorio**:
 ```bash
-git clone <repository-url>
-cd nissum-technical-challenge
+git clone https://github.com/rwangnet/nissum_tech_challenge.git
+cd nissum_tech_challenge
 ```
 
 2. **🏗️ Compilar el proyecto**:
@@ -196,7 +196,7 @@ Una vez iniciada la aplicación:
 ./mvnw clean package -DskipTests
 
 # Ejecutar JAR generado
-java -jar target/nissum-technical-challenge-0.0.1-SNAPSHOT.jar
+java -jar target/nissum_technical_challenge-0.0.1-SNAPSHOT.jar
 ```
 
 ## 🌐 API Endpoints y Flujos de Usuario
@@ -939,7 +939,7 @@ Para ejecutar tests con reporte de cobertura:
 FROM openjdk:17-jdk-slim
 
 WORKDIR /app
-COPY target/nissum-technical-challenge-*.jar app.jar
+COPY target/nissum_technical_challenge-*.jar app.jar
 
 EXPOSE 8080
 
@@ -949,23 +949,23 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 ```bash
 # Build y run con Docker
 ./mvnw clean package -DskipTests
-docker build -t nissum-challenge .
-docker run -p 8080:8080 nissum-challenge
+docker build -t nissum-tech-challenge .
+docker run -p 8080:8080 nissum-tech-challenge
 ```
 
 ### ☁️ Deployment en Cloud
 
 #### AWS Elastic Beanstalk
 ```bash
-# Crear WAR para deployment
+# Crear JAR para deployment
 ./mvnw clean package spring-boot:repackage
-# Subir target/nissum-technical-challenge-*.jar
+# Subir target/nissum_technical_challenge-*.jar
 ```
 
 #### Heroku
 ```bash
 # Crear Procfile
-echo "web: java -jar target/nissum-technical-challenge-*.jar" > Procfile
+echo "web: java -jar target/nissum_technical_challenge-*.jar" > Procfile
 
 # Deploy
 git add . && git commit -m "Deploy to Heroku"
@@ -1055,19 +1055,42 @@ jobs:
       - run: ./mvnw jacoco:report
 ```
 
-## 📚 Recursos Adicionales
+## � Versionado y Releases
+
+### 📋 Historial de Versiones
+- **v1.0.0** (Noviembre 2025): Versión inicial completada
+  - ✅ Sistema de registro de usuarios con JWT
+  - ✅ Validaciones configurables de email y contraseña
+  - ✅ Suite completa de 46 tests unitarios e integración
+  - ✅ Documentación JavaDoc completa
+  - ✅ Swagger UI interactivo
+  - ✅ Manejo robusto de errores
+
+### 🏷️ Tags de Git
+```bash
+# Ver todas las versiones
+git tag
+
+# Checkout a versión específica
+git checkout v1.0.0
+```
+
+## �📚 Recursos Adicionales
 
 ### 📖 Documentación Relacionada
 - [Spring Boot Reference](https://docs.spring.io/spring-boot/docs/current/reference/html/)
 - [Spring Security JWT](https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html)
 - [JWT Best Practices](https://tools.ietf.org/html/rfc7519)
 - [API Design Guidelines](https://restfulapi.net/)
+- [Nissum Technical Challenge Spec](https://github.com/rwangnet/nissum_tech_challenge)
 
 ### 🛠️ Herramientas Recomendadas
 - **IDE**: IntelliJ IDEA, VS Code con Java Extension Pack
 - **Testing**: Postman, Insomnia, HTTPie
 - **Database**: DBeaver, H2 Console
 - **Monitoring**: Micrometer, Prometheus, Grafana
+- **CI/CD**: GitHub Actions, Jenkins
+- **Container**: Docker, Kubernetes
 
 ## 🎯 Próximos Pasos / Roadmap
 
@@ -1166,6 +1189,30 @@ NoSuchMethodError: 'void org.springframework.web.method.ControllerAdviceBean.<in
   - Versión de Java/Maven
 
 ### 📧 Contacto
-Para preguntas técnicas o sugerencias sobre este challenge de Nissum, contactar al desarrollador.
+- **👨‍💻 Desarrollador**: Ricardo Wangnet
+- **🏢 Proyecto**: Nissum Technical Challenge
+- **📧 Email**: rwangnet@gmail.com
+- **🐙 GitHub**: [@rwangnet](https://github.com/rwangnet)
+
+Para preguntas técnicas específicas sobre el challenge, crear un issue en el repositorio de GitHub.
+
+## 📄 Licencia y Términos de Uso
+
+### 📋 Licencia
+Este proyecto fue desarrollado como parte del **Desafío Técnico de Nissum** y está disponible bajo los siguientes términos:
+
+- ✅ **Uso Educativo**: Libre uso para propósitos de aprendizaje y demostración
+- ✅ **Evaluación Técnica**: Permitido para revisión por parte del equipo de Nissum
+- ✅ **Portfolio Personal**: Incluible en portfolio profesional con atribución
+- ❌ **Uso Comercial**: No autorizado sin permiso explícito
+- ❌ **Redistribución**: No permitida sin autorización
+
+### 👤 Autoría
+**Desarrollado por**: Ricardo Wangnet  
+**Proyecto**: Nissum Technical Challenge  
+**Año**: 2025  
+
+### 🚨 Descargo de Responsabilidad
+Este proyecto es una demostración técnica desarrollada para evaluación. No debe utilizarse en entornos de producción sin las debidas modificaciones de seguridad y escalabilidad.
 
 ---
