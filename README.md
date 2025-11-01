@@ -45,8 +45,7 @@ El proyecto implementa una **arquitectura en capas** con separación clara de re
 │   ├── CustomErrorController.java
 │   └── TestSecurityConfig.java
 ├── 🚨 exception/          # Manejo de errores y excepciones
-│   ├── UserAlreadyExistsException.java
-│   └── InvalidInputException.java
+│   └── UserAlreadyExistsException.java
 ├── 🔒 filter/             # Filtros de seguridad
 │   └── JwtAuthenticationFilter.java
 └── 🛡️ util/               # Utilidades (JWT management)
