@@ -44,10 +44,7 @@ Este proyecto implementa una **API REST para registro de usuarios** siguiendo lo
 │  UserService.java           │  ErrorHandlingService.java    │
 │  └── Business Logic         │  └── Centralized Errors       │
 │  └── User Registration      │  └── Consistent Responses     │
-│                              │                               │
-│  JwtUtil.java               │  ValidationService.java       │
-│  └── Token Management       │  └── Input Validation         │
-│  └── JWT Operations         │  └── Custom Regex Rules       │
+│  └── Input Validation       │  └── JWT Token Generation     │
 ├─────────────────────────────────────────────────────────────┤
 │                   🗄️ PERSISTENCE LAYER                     │
 ├─────────────────────────────────────────────────────────────┤
@@ -76,12 +73,11 @@ src/main/java/cl/rwangnet/nissum_technical_challenge/
 │
 ├── 🧠 service/                    # Capa de Negocio
 │   ├── UserService.java           # Lógica de registro
-│   ├── ErrorHandlingService.java  # Manejo centralizado errores
-│   ├── ValidationService.java     # Validaciones personalizadas
-│   └── JwtUtil.java              # Utilidades JWT
+│   └── ErrorHandlingService.java  # Manejo centralizado errores
 │
 ├── 🗄️ repository/                # Capa de Datos
-│   └── UserRepository.java       # Acceso a datos JPA
+│   ├── UserRepository.java       # Acceso a datos JPA
+│   └── PhoneRepository.java      # Acceso a datos Phone
 │
 ├── 🏠 model/                      # Entidades de Dominio
 │   ├── User.java                 # Entidad principal
@@ -90,12 +86,19 @@ src/main/java/cl/rwangnet/nissum_technical_challenge/
 ├── 🔧 config/                     # Configuración
 │   ├── SecurityConfig.java       # Configuración Spring Security
 │   ├── OpenApiConfig.java        # Configuración Swagger
+│   └── CustomErrorController.java # Controlador de errores HTTP
+│
+├── 🔒 filter/                     # Filtros de Seguridad
 │   └── JwtAuthenticationFilter.java # Filtro JWT personalizado
+│
+├── 🛡️ util/                      # Utilidades
+│   └── JwtUtil.java              # Utilidades JWT
 │
 ├── 📋 dto/                        # Data Transfer Objects
 │   ├── UserRegistrationRequest.java  # Request DTO
-│   ├── UserRegistrationResponse.java # Response DTO
-│   ├── PhoneDto.java             # Phone DTO
+│   ├── UserResponse.java         # User Response DTO
+│   ├── PhoneRequest.java         # Phone Request DTO
+│   ├── PhoneResponse.java        # Phone Response DTO
 │   └── ErrorResponse.java        # Error Response DTO
 │
 └── 🚨 exception/                  # Manejo de Excepciones
@@ -114,10 +117,10 @@ El sistema utiliza una **arquitectura de manejo de errores centralizada** compat
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Exception     │    │ ErrorHandling   │    │  JSON Response  │
-│   Occurs        │───▶│    Service      │───▶│   Formatted     │
-│                 │    │                 │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+│   Exception     │    │ ErrorHandling   │    │ Map<String,String> │
+│   Occurs        │───▶│    Service      │───▶│   JSON Response    │
+│                 │    │                 │    │                    │
+└─────────────────┘    └─────────────────┘    └─────────────────────┘
          │                       │                       │
          ▼                       ▼                       ▼
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -144,11 +147,13 @@ El sistema utiliza una **arquitectura de manejo de errores centralizada** compat
 @Service
 public class ErrorHandlingService {
     // Manejo centralizado de todos los tipos de error
-    public ResponseEntity<ErrorResponse> handleUserAlreadyExists(String email)
-    public ResponseEntity<ErrorResponse> handleValidationErrors(BindingResult bindingResult)
-    public ResponseEntity<ErrorResponse> handleGenericError(String message)
-    public ResponseEntity<ErrorResponse> handleForbidden()
-    public ResponseEntity<ErrorResponse> handleUnauthorized()
+    public ResponseEntity<Map<String, String>> handleUserAlreadyExists(UserAlreadyExistsException ex)
+    public ResponseEntity<Map<String, String>> handleValidationErrors(BindingResult bindingResult)
+    public ResponseEntity<Map<String, String>> handleValidationException(ValidationException ex)
+    public ResponseEntity<Map<String, String>> handleGenericError(Exception ex)
+    public ResponseEntity<Map<String, String>> handleBadRequest(String message)
+    public ResponseEntity<Map<String, String>> handleForbidden(String message)
+    public ResponseEntity<Map<String, String>> handleUnauthorized(String message)
 }
 ```
 
@@ -313,8 +318,8 @@ public class UserRegistrationRequest {
     // Data Transfer Object para requests
 }
 
-public class UserRegistrationResponse {
-    // Data Transfer Object para responses  
+public class UserResponse {
+    // Data Transfer Object para responses de usuario  
 }
 ```
 
@@ -332,8 +337,8 @@ public class User {
 @Service
 public class ErrorHandlingService {
     // Diferentes estrategias de manejo por tipo de error
-    public ResponseEntity<ErrorResponse> handleUserAlreadyExists(String email)
-    public ResponseEntity<ErrorResponse> handleValidationErrors(BindingResult bindingResult)
+    public ResponseEntity<Map<String, String>> handleUserAlreadyExists(String email)
+    public ResponseEntity<Map<String, String>> handleValidationErrors(BindingResult bindingResult)
 }
 ```
 
@@ -420,7 +425,9 @@ graph TB
     subgraph "🧠 Business Layer"
         US[UserService]
         EHS[ErrorHandlingService]
-        VS[ValidationService]
+    end
+    
+    subgraph "🛡️ Utilities Layer"
         JU[JwtUtil]
     end
     
@@ -442,7 +449,6 @@ graph TB
     UC --> US
     UC --> EHS
     US --> UR
-    US --> VS
     US --> JU
     UR --> DB
     
@@ -460,18 +466,17 @@ graph TB
 sequenceDiagram
     participant Client
     participant UserController
-    participant ValidationService
     participant UserService
     participant UserRepository
     participant ErrorHandlingService
     participant JwtUtil
 
     Client->>+UserController: POST /api/users/register
-    UserController->>+ValidationService: Validar request
+    UserController->>+UserService: Validar y registrar usuario
     
     alt Validación exitosa
-        ValidationService-->>-UserController: ✅ Valid
-        UserController->>+UserService: Registrar usuario
+        UserService-->>UserService: ✅ Validar request
+        UserService->>UserService: Continuar proceso registro
         UserService->>+UserRepository: Verificar email único
         
         alt Email disponible
@@ -490,9 +495,10 @@ sequenceDiagram
             UserController-->>-Client: 409 Conflict
         end
     else Validación falla
-        ValidationService-->>-UserController: ❌ Invalid
-        UserController->>+ErrorHandlingService: handleValidationErrors
-        ErrorHandlingService-->>-UserController: Error response
+        UserService-->>UserService: ❌ Invalid data
+        UserService->>+ErrorHandlingService: handleValidationErrors
+        ErrorHandlingService-->>-UserService: Error response
+        UserService-->>-UserController: Error response
         UserController-->>-Client: 400 Bad Request
     end
 ```
